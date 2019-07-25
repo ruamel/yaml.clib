@@ -1027,15 +1027,21 @@ def main():
                     d = os.path.join(dist_base, nsp.full_package_name)
                 else:
                     d = 'dist'
+            dashed_vs = '-' + version_str + '-'
+            latest_mtime = -1
+            full_name = None
             for x in os.listdir(d):
-                dashed_vs = '-' + version_str + '-'
                 if x.endswith('.whl') and dashed_vs in x:
                     # remove .pth file from the wheel
-                    full_name = os.path.join(d, x)
-                    print('patching .pth from', full_name)
-                    with InMemoryZipFile(full_name) as imz:
-                        imz.delete_from_zip_file(nsp.full_package_name + '.*.pth')
-                    break
+                    fn = os.path.join(d, x)
+                    if os.path.getmtime(fn) > latest_mtime:
+                        full_name = fn
+            if full_name is None:
+                print('no wheel file found in', d)
+            else:
+                print('patching .pth from {}'.format(full_name))
+                with InMemoryZipFile(full_name) as imz:
+                    imz.delete_from_zip_file(nsp.full_package_name + '.*.pth')
         return
     for x in ['-c', 'egg_info', '--egg-base', 'pip-egg-info']:
         if x not in sys.argv:
