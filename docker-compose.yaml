@@ -1,0 +1,13 @@
+version: '2'
+user-data:
+  author: Anthon van der Neut <a.van.der.neut@ruamel.eu>
+  description: manylinux wheel build container for ruamel.yaml.clib
+  env-defaults:
+    PYDISTBASE: /tmp    # for building, normally set by `dv --distbase`
+services:
+ ruamel_yaml_clib_manylinux1:
+    container_name: ruamel_yaml_clib
+    build: .
+    volumes:
+    - ${PYDISTBASE}/ruamel.yaml.clib:/src/dist
+    - .:/src
