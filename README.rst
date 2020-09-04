@@ -20,6 +20,6 @@ directory) and the Python code for ruamel.yaml under /usr/lib/pythonX.Y.
 .. image:: https://bestpractices.coreinfrastructure.org/projects/1128/badge
    :target: https://bestpractices.coreinfrastructure.org/projects/1128
 
-.. image:: https://bitbucket.org/ruamel/yaml/raw/default/_doc/_static/license.svg
+.. image:: https://sourceforge.net/p/ruamel-yaml-clib/code/ci/default/tree/_doc/_static/license.svg?format=raw
    :target: https://opensource.org/licenses/MIT
  

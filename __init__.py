@@ -7,8 +7,8 @@ if False:  # MYPY
 
 _package_data = dict(
     full_package_name='ruamel.yaml.clib',
-    version_info=(0, 2, 0),
-    __version__='0.2.0',
+    version_info=(0, 2, 1),
+    __version__='0.2.1',
     author='Anthon van der Neut',
     author_email='a.van.der.neut@ruamel.eu',
     description='C version of reader, parser and emitter for ruamel.yaml derived from libyaml',
@@ -18,38 +18,38 @@ _package_data = dict(
     binary_only=True,
     since=2019,
     ext_modules=[
-            dict(
-                name='_ruamel_yaml',
-                src=[
-                        '_ruamel_yaml.c',
-                        'api.c',
-                        'writer.c',
-                        'dumper.c',
-                        'loader.c',
-                        'reader.c',
-                        'scanner.c',
-                        'parser.c',
-                        'emitter.c',
-                ],
-                lib=[],
-                test="""
+        dict(
+            name='_ruamel_yaml',
+            src=[
+                '_ruamel_yaml.c',
+                'api.c',
+                'writer.c',
+                'dumper.c',
+                'loader.c',
+                'reader.c',
+                'scanner.c',
+                'parser.c',
+                'emitter.c',
+            ],
+            lib=[],
+            test="""
             int main(int argc, char* argv[])
             {
               /* prevent warning */
               return 0;
             }
             """,
-            ),
+        ),
     ],
     # NOQA
     # test='#include "ext/yaml.h"\n\nint main(int argc, char* argv[])\n{\nyaml_parser_t parser;\nparser = parser;  /* prevent warning */\nreturn 0;\n}\n',  # NOQA
     classifiers=[
-            'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3.5',
-            'Programming Language :: Python :: 3.6',
-            'Programming Language :: Python :: 3.7',
-            'Programming Language :: Python :: Implementation :: CPython',
-            'Topic :: Software Development :: Libraries :: Python Modules',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords='yaml 1.2 parser c-library config',
     wheels=dict(
