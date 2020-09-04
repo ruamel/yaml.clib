@@ -4,10 +4,10 @@ ruamel.yaml.clib
 
 ``ruamel.yaml.clib`` is the C based reader/scanner and emitter for ruamel.yaml
 
-:version:       0.2.0
-:updated:       2019-09-26
+:version:       0.2.2
+:updated:       2020-09-04
 :documentation: http://yaml.readthedocs.io
-:repository:    https://bitbucket.org/ruamel/yaml.clib
+:repository:    https://sourceforge.net/projects/ruamel-yaml-clib/
 :pypi:          https://pypi.org/project/ruamel.yaml.clib/
 
 This package was split of from ruamel.yaml, so that ruamel.yaml can be build as  
