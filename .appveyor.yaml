@@ -1,5 +1,7 @@
 # based on: https://packaging.python.org/guides/supporting-windows-using-appveyor/
 
+image: Visual Studio 2019
+
 environment:
   matrix:
     - PYTHON: C:\Python27
@@ -12,10 +14,8 @@ environment:
     - PYTHON: C:\Python37-x64
     - PYTHON: C:\Python38
     - PYTHON: C:\Python38-x64
-    - PYTHON: C:\Python39
-      image: Visual Studio 2019
-    - PYTHON: C:\Python39-x64
-      image: Visual Studio 2019
+    - {PY_VER: "39", PY_ARCH: "32"}
+    - {PY_VER: "39", PY_ARCH: "64"}
 
 install:
   - |
