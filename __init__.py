@@ -32,7 +32,7 @@ _package_data = dict(
                 'emitter.c',
             ],
             lib=[],
-            test="""
+            testx="""
             int main(int argc, char* argv[])
             {
               /* prevent warning */
