@@ -1,38 +1,21 @@
-# based on: https://packaging.python.org/guides/supporting-windows-using-appveyor/
-
-image: Visual Studio 2019
 
 environment:
   matrix:
-    # - PYTHON: C:\Python27
-    # - PYTHON: C:\Python27-x64
-    # - PYTHON: C:\Python35
-    # - PYTHON: C:\Python35-x64
-    # - PYTHON: C:\Python36
-    # - PYTHON: C:\Python36-x64
-    # - PYTHON: C:\Python37
-    # - PYTHON: C:\Python37-x64
-    # - PYTHON: C:\Python38
-    # - PYTHON: C:\Python38-x64
-    - {PY_VER: "39", PY_ARCH: "32"}
-    - {PY_VER: "39", PY_ARCH: "64"}
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      APPVEYOR_JOB_NAME: "python37-x64-vs2019"
+      # CIBW_BUILD: "cp35-win* cp36-win* cp37-win* cp38-win* cp39-win*"
+      CIBW_BUILD: "cp39-win*"
 
-  PYEXE: C:\Python36\python.exe  
+stack: python 3.7
 
-install:
-  - |
-    %PYTHON%\python.exe -m pip install --upgrade -q pip wheel setuptools
-    %PYTHON%\python.exe -m pip list --format columns
+init:
+- cmd: set PATH=C:\Python37;C:\Python37\Scripts;%PATH%
 
-# only used when compiling (for Python with C extensions this is done in the after_test)
-build: off
+install: python -m pip install cibuildwheel==1.6.4
 
-test_script:
-  - echo Skipped for now
-
-after_test:
-  - |
-    %PYTHON%\python.exe setup.py bdist_wheel
+build_script:
+  - python -m cibuildwheel --output-dir whl
 
 artifacts:
-  - path: dist\*
+  - path: whl/*.whl
+    name: Wheels
