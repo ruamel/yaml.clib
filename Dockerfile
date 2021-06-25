@@ -22,4 +22,4 @@ RUN echo '  auditwheel repair "$whl" -w /src/dist/'       >> /usr/bin/makewheel
 RUN echo 'done'                                           >> /usr/bin/makewheel
 RUN chmod 755 /usr/bin/makewheel
 
-CMD /usr/bin/makewheel 27 35 36 37 38
+CMD /usr/bin/makewheel 27 35 36 37 38 39
