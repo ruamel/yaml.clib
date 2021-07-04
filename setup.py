@@ -856,7 +856,7 @@ class NameSpacePackager(object):
             return False
         with open(file_name, 'w') as fp:
             if os.path.exists('LICENSE'):
-                fp.write('[metadata]\nlicense-file = LICENSE\n')
+                fp.write('[metadata]\nlicense_file = LICENSE\n')
             else:
                 print('\n\n>>>>>> LICENSE file not found <<<<<\n\n')
             if self._pkg_data.get('universal'):
