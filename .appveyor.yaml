@@ -3,7 +3,7 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       APPVEYOR_JOB_NAME: "python37-x64-vs2019"
-      CIBW_BUILD: "cp35-win* cp36-win* cp37-win* cp38-win* cp39-win*"
+      CIBW_BUILD: "cp35-win* cp36-win* cp37-win* cp38-win* cp39-win* cp310-win*"
 
 stack: python 3.7
 
