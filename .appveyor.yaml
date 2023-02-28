@@ -3,7 +3,12 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       APPVEYOR_JOB_NAME: "python37-x64-vs2019"
-      CIBW_BUILD: "cp311-win* cp310-win* cp39-win* cp38-win*"
+      CIBW_BUILD: "cp310-win* cp39-win* cp38-win*"
+
+    - PYTHON: 'C:\\Python311-x64'
+      PYTHON_VERSION: '3.11'
+      PYTHON_ARCH: '64'
+      UIA_SUPPORT: 'YES'
 
 stack: python 3.7
 
