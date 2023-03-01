@@ -1,21 +1,20 @@
 
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      APPVEYOR_JOB_NAME: "python37-x64-vs2019"
-      CIBW_BUILD: "cp310-win* cp39-win* cp38-win*"
-
-    - PYTHON: 'C:\\Python311-x64'
-      PYTHON_VERSION: '3.11'
-      PYTHON_ARCH: '64'
-      UIA_SUPPORT: 'YES'
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    APPVEYOR_JOB_NAME: "python37-x64-vs2019"
+    CIBW_BUILD:
+    - cp311-win
+    - cp310-win*
+    - cp39-win*
+    - cp38-win*
 
 stack: python 3.7
 
 init:
 - cmd: set PATH=C:\Python37;C:\Python37\Scripts;%PATH%
 
-install: python -m pip install -U pip cibuildwheel==2.3.0
+install: python -m pip install -U pip cibuildwheel==2.12.0
 
 build_script:
   - python -m cibuildwheel --output-dir whl
