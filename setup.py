@@ -1,15 +1,13 @@
 # # header
 # coding: utf-8
-# dd: 20200903
-
-from __future__ import print_function, absolute_import, division, unicode_literals
+# dd: 20230418
 
 # # __init__.py parser
 
 import sys
 import os
 import datetime
-import traceback
+from textwrap import dedent
 
 sys.path = [path for path in sys.path if path not in [os.getcwd(), ""]]
 import platform  # NOQA
@@ -20,13 +18,13 @@ from setuptools import setup, Extension, Distribution  # NOQA
 from setuptools.command import install_lib  # NOQA
 from setuptools.command.sdist import sdist as _sdist  # NOQA
 
-try:
-    from setuptools.namespaces import Installer as NameSpaceInstaller # NOQA
-except ImportError:
-    msg = ('You should use the latest setuptools. The namespaces.py file that this setup.py'
-           ' uses was added in setuptools 28.7.0 (Oct 2016)')
-    print(msg)
-    sys.exit()
+# try:
+#     from setuptools.namespaces import Installer as NameSpaceInstaller # NOQA
+# except ImportError:
+#     msg = ('You should use the latest setuptools. The namespaces.py file that this setup.py'
+#            ' uses was added in setuptools 28.7.0 (Oct 2016)')
+#     print(msg)
+#     sys.exit()
 
 if __name__ != '__main__':
     raise NotImplementedError('should never include setup.py')
@@ -50,14 +48,10 @@ if sys.version_info < (3, 4):
         pass
 
 
-if sys.version_info >= (3, 8):
-    from ast import Str, Num, Bytes, NameConstant  # NOQA
-
-
 if sys.version_info < (3,):
-    open_kw = dict()
+    open_kw = {}
 else:
-    open_kw = dict(encoding='utf-8')
+    open_kw = dict(encoding='utf-8')  # NOQA: C408
 
 
 if sys.version_info < (2, 7) or platform.python_implementation() == 'Jython':
@@ -80,6 +74,9 @@ else:
             kw1['file'] = fp
             print('{:%Y-%d-%mT%H:%M:%S}'.format(datetime.datetime.now()), file=fp, end=' ')
             print(*args, **kw1)
+
+if sys.version_info >= (3, 8):
+    from ast import Str, Num, Bytes, NameConstant  # NOQA
 
 
 def literal_eval(node_or_string):
@@ -116,7 +113,7 @@ def literal_eval(node_or_string):
         elif isinstance(node, Set):
             return set(map(_convert, node.elts))
         elif isinstance(node, Dict):
-            return dict((_convert(k), _convert(v)) for k, v in zip(node.keys, node.values))
+            return {_convert(k): _convert(v) for k, v in zip(node.keys, node.values)}
         elif isinstance(node, NameConstant):
             return node.value
         elif sys.version_info < (3, 4) and isinstance(node, Name):
@@ -147,7 +144,7 @@ def literal_eval(node_or_string):
         elif isinstance(node, Call):
             func_id = getattr(node.func, 'id', None)
             if func_id == 'dict':
-                return dict((k.arg, _convert(k.value)) for k in node.keywords)
+                return {k.arg: _convert(k.value) for k in node.keywords}
             elif func_id == 'set':
                 return set(_convert(node.args[0]))
             elif func_id == 'date':
@@ -205,8 +202,8 @@ def _package_data(fn):
                                 if index == e.lineno - 1:
                                     print(
                                         '{0:{1}}  {2}^--- {3}'.format(
-                                            ' ', w, ' ' * e.offset, e.node
-                                        )
+                                            ' ', w, ' ' * e.offset, e.node,
+                                        ),
                                     )
                         raise
                     break
@@ -279,8 +276,7 @@ class MyInstallLib(install_lib.install_lib):
 class MySdist(_sdist):
     def initialize_options(self):
         _sdist.initialize_options(self)
-        # see pep 527, new uploads should be tar.gz or .zip
-        # fmt = getattr(self, 'tarfmt',  None)
+        # failed expiriment, see pep 527, new uploads should be tar.gz or .zip
         # because of unicode_literals
         # self.formats = fmt if fmt else [b'bztar'] if sys.version_info < (3, ) else ['bztar']
         dist_base = os.environ.get('PYDISTBASE')
@@ -318,8 +314,8 @@ class NameSpacePackager(object):
         self._split = None
         self.depth = self.full_package_name.count('.')
         self.nested = self._pkg_data.get('nested', False)
-        if self.nested:
-            NameSpaceInstaller.install_namespaces = lambda x: None
+        # if self.nested:
+        #     NameSpaceInstaller.install_namespaces = lambda x: None
         self.command = None
         self.python_version()
         self._pkg = [None, None]  # required and pre-installable packages
@@ -388,9 +384,6 @@ class NameSpacePackager(object):
         return self._split
 
     @property
-    def namespace_packages(self):
-        return self.split[: self.depth]
-
     def namespace_directories(self, depth=None):
         """return list of directories where the namespace should be created /
         can be found
@@ -407,26 +400,14 @@ class NameSpacePackager(object):
     def package_dir(self):
         d = {
             # don't specify empty dir, clashes with package_data spec
-            self.full_package_name: '.'
+            self.full_package_name: '.',
         }
         if 'extra_packages' in self._pkg_data:
             return d
-        if len(self.split) > 1:  # only if package namespace
-            d[self.split[0]] = self.namespace_directories(1)[0]
+        # if len(self.split) > 1:  # only if package namespace
+        #     d[self.split[0]] = self.namespace_directories(1)[0]
+        # print('d', d, os.getcwd())
         return d
-
-    def create_dirs(self):
-        """create the directories necessary for namespace packaging"""
-        directories = self.namespace_directories(self.depth)
-        if not directories:
-            return
-        if not os.path.exists(directories[0]):
-            for d in directories:
-                os.mkdir(d)
-                with open(os.path.join(d, '__init__.py'), 'w') as fp:
-                    fp.write(
-                        'import pkg_resources\n' 'pkg_resources.declare_namespace(__name__)\n'
-                    )
 
     def python_version(self):
         supported = self._pkg_data.get('supported')
@@ -457,7 +438,7 @@ class NameSpacePackager(object):
         # installed packages. As we don't know the order in namespace_packages
         # do some magic
         prefix = self.split[0]
-        prefixes = set([prefix, prefix.replace('_', '-')])
+        prefixes = {prefix, prefix.replace('_', '-')}
         for p in sys.path:
             if not p:
                 continue  # directory with setup.py
@@ -480,7 +461,7 @@ class NameSpacePackager(object):
                     if self.command == 'develop':
                         raise InstallationError(
                             'Cannot mix develop (pip install -e),\nwith '
-                            'non-develop installs for package name {0}'.format(fn)
+                            'non-develop installs for package name {0}'.format(fn),
                         )
                 elif fn == prefix:
                     raise InstallationError('non directory package {0} in {1}'.format(fn, p))
@@ -492,7 +473,7 @@ class NameSpacePackager(object):
                 if fn.endswith('-link') and self.command == 'install':
                     raise InstallationError(
                         'Cannot mix non-develop with develop\n(pip install -e)'
-                        ' installs for package name {0}'.format(fn)
+                        ' installs for package name {0}'.format(fn),
                     )
 
     def entry_points(self, script_name=None, package_name=None):
@@ -510,7 +491,7 @@ class NameSpacePackager(object):
 
         def pckg_entry_point(name):
             return '{0}{1}:main'.format(
-                name, '.__main__' if os.path.exists('__main__.py') else ""
+                name, '.__main__' if os.path.exists('__main__.py') else "",
             )
 
         ep = self._pkg_data.get('entry_points', True)
@@ -528,11 +509,11 @@ class NameSpacePackager(object):
         if package_name is None:
             package_name = self.full_package_name
         if not script_name:
-            script_name = package_name.split('.')[-1]
+            script_name = package_name.rsplit('.', 1)[-1]
         return {
             'console_scripts': [
-                '{0} = {1}'.format(script_name, pckg_entry_point(package_name))
-            ]
+                '{0} = {1}'.format(script_name, pckg_entry_point(package_name)),
+            ],
         }
 
     @property
@@ -605,8 +586,8 @@ class NameSpacePackager(object):
                     'Operating System :: OS Independent',
                     'Programming Language :: Python',
                 ]
-                + [self.pn(x) for x in self._pkg_data.get('classifiers', [])]
-            )
+                + [self.pn(x) for x in self._pkg_data.get('classifiers', [])],
+            ),
         )
 
     @property
@@ -719,7 +700,8 @@ class NameSpacePackager(object):
 
     @property
     def packages(self):
-        s = self.split
+        # s = self.split
+        s = [self._pkg_data['full_package_name']]
         # fixed this in package_data, the keys there must be non-unicode for py27
         # if sys.version_info < (3, 0):
         #     s = [x.encode('utf-8') for x in self.split]
@@ -755,7 +737,7 @@ class NameSpacePackager(object):
         except ValueError:
             pass
         self._ext_modules = []
-        no_test_compile = False
+        no_test_compile = True
         if '--restructuredtext' in sys.argv:
             no_test_compile = True
         elif 'sdist' in sys.argv:
@@ -769,77 +751,7 @@ class NameSpacePackager(object):
                 )
                 self._ext_modules.append(ext)
             return self._ext_modules
-
-        print('sys.argv', sys.argv)
-        import tempfile
-        import shutil
-        from textwrap import dedent
-
-        import distutils.sysconfig
-        import distutils.ccompiler
-        from distutils.errors import CompileError, LinkError
-
-        for target in self._pkg_data.get('ext_modules', []):  # list of dicts
-            ext = Extension(
-                self.pn(target['name']),
-                sources=[self.pn(x) for x in target['src']],
-                libraries=[self.pn(x) for x in target.get('lib')],
-            )
-            # debug('test1 in target', 'test' in target, target)
-            if 'test' not in target:  # no test, just hope it works
-                self._ext_modules.append(ext)
-                continue
-            if sys.version_info[:2] == (3, 4) and platform.system() == 'Windows':
-                # this is giving problems on appveyor, so skip
-                if 'FORCE_C_BUILD_TEST' not in os.environ:
-                    self._ext_modules.append(ext)
-                    continue
-            # write a temporary .c file to compile
-            c_code = dedent(target['test'])
-            try:
-                tmp_dir = tempfile.mkdtemp(prefix='tmp_ruamel_')
-                bin_file_name = 'test' + self.pn(target['name'])
-                file_name = os.path.join(tmp_dir, bin_file_name + '.c')
-                print('test compiling', file_name, '->', bin_file_name, end=' ')
-                with open(file_name, 'w') as fp:  # write source
-                    fp.write(c_code)
-                # and try to compile it
-                compiler = distutils.ccompiler.new_compiler()
-                assert isinstance(compiler, distutils.ccompiler.CCompiler)
-                # do any platform specific initialisations
-                distutils.sysconfig.customize_compiler(compiler)
-                # make sure you can reach header files because compile does change dir
-                compiler.add_include_dir(os.getcwd())
-                if sys.version_info < (3,):
-                    tmp_dir = tmp_dir.encode('utf-8')
-                # used to be a different directory, not necessary
-                compile_out_dir = tmp_dir
-                try:
-                    compiler.link_executable(
-                        compiler.compile([file_name], output_dir=compile_out_dir),
-                        bin_file_name,
-                        output_dir=tmp_dir,
-                        libraries=ext.libraries,
-                    )
-                except CompileError:
-                    debug('compile error:', file_name)
-                    print('compile error:', file_name)
-                    raise
-                except LinkError:
-                    debug('link error', file_name)
-                    print('link error', file_name)
-                    raise
-                print('OK')
-                self._ext_modules.append(ext)
-            except Exception as e:  # NOQA
-                debug('Exception:', e)
-                print('Exception:', e)
-                sys.exit(1)
-                if sys.version_info[:2] == (3, 4) and platform.system() == 'Windows':
-                    traceback.print_exc()
-            finally:
-                shutil.rmtree(tmp_dir)
-        return self._ext_modules
+        # this used to use distutils
 
     @property
     def test_suite(self):
@@ -855,10 +767,6 @@ class NameSpacePackager(object):
         if os.path.exists(file_name):  # add it if not in there?
             return False
         with open(file_name, 'w') as fp:
-            if os.path.exists('LICENSE'):
-                fp.write('[metadata]\nlicense_file = LICENSE\n')
-            else:
-                print('\n\n>>>>>> LICENSE file not found <<<<<\n\n')
             if self._pkg_data.get('universal'):
                 fp.write('[bdist_wheel]\nuniversal = 1\n')
         try:
@@ -870,33 +778,78 @@ class NameSpacePackager(object):
         return True
 
 
-# # call setup
+class TmpFiles:
+    def __init__(self, pkg_data, py_project=True, keep=False):
+        self._rm_after = []
+        self._pkg_data = pkg_data
+        self._py_project = py_project
+        self._bdist_wheel = 'bdist_wheel' in sys.argv
+        self._keep = keep
+
+    def __enter__(self):
+        self.bdist_wheel()
+        self.py_project()
+
+    def bdist_wheel(self):
+        """pyproject doesn't allow for universal, so use setup.cfg if necessary
+        """
+        file_name = 'setup.cfg'
+        if not self._bdist_wheel or os.path.exists(file_name):
+            return
+        if self._pkg_data.get('universal'):
+            self._rm_after.append(file_name)
+            with open(file_name, 'w') as fp:
+                fp.write('[bdist_wheel]\nuniversal = 1\n')
+
+    def py_project(self):
+        """
+        to prevent pip from complaining, or is it too late to create it from setup.py
+        """
+        file_name = 'pyproject.toml'
+        if not self._py_project or os.path.exists(file_name):
+            return
+        self._rm_after.append(file_name)
+        with open(file_name, 'w') as fp:
+            fp.write(dedent("""\
+            [build-system]
+            requires = ["setuptools", "wheel"]
+            # test
+            build-backend = "setuptools.build_meta"
+            """))
+
+    def __exit__(self, typ, value, traceback):
+        if self._keep:
+            return
+        for p in self._rm_after:
+            if not os.path.exists(p):
+                print('file {} already removed'.format(p))
+            else:
+                os.unlink(p)
+
+
+# call setup
 def main():
     dump_kw = '--dump-kw'
     if dump_kw in sys.argv:
         import wheel
-        import distutils
         import setuptools
+        import pip
 
         print('python:    ', sys.version)
+        print('pip:       ', pip.__version__)
         print('setuptools:', setuptools.__version__)
-        print('distutils: ', distutils.__version__)
         print('wheel:     ', wheel.__version__)
     nsp = NameSpacePackager(pkg_data)
     nsp.check()
-    nsp.create_dirs()
+    # nsp.create_dirs()
     MySdist.nsp = nsp
-    if pkg_data.get('tarfmt'):
-        MySdist.tarfmt = pkg_data.get('tarfmt')
-
-    cmdclass = dict(install_lib=MyInstallLib, sdist=MySdist)
+    cmdclass = dict(install_lib=MyInstallLib, sdist=MySdist)  # NOQA: C408
     if _bdist_wheel_available:
         MyBdistWheel.nsp = nsp
         cmdclass['bdist_wheel'] = MyBdistWheel
 
-    kw = dict(
+    kw = dict(  # NOQA: C408
         name=nsp.full_package_name,
-        namespace_packages=nsp.namespace_packages,
         version=version_str,
         packages=nsp.packages,
         python_requires=nsp.python_requires,
@@ -915,12 +868,13 @@ def main():
         package_data=nsp.package_data,
         ext_modules=nsp.ext_modules,
         test_suite=nsp.test_suite,
+        zip_safe=False,
     )
 
     if '--version' not in sys.argv and ('--verbose' in sys.argv or dump_kw in sys.argv):
         for k in sorted(kw):
             v = kw[k]
-            print('  "{0}": "{1}",'.format(k, v))
+            print('  "{0}": {1},'.format(k, repr(v)))
     # if '--record' in sys.argv:
     #     return
     if dump_kw in sys.argv:
@@ -932,31 +886,32 @@ def main():
     except Exception:
         pass
 
-    if nsp.wheel(kw, setup):
-        return
-    for x in ['-c', 'egg_info', '--egg-base', 'pip-egg-info']:
-        if x not in sys.argv:
-            break
-    else:
-        # we're doing a tox setup install any starred package by searching up the source tree
-        # until you match your/package/name for your.package.name
-        for p in nsp.install_pre:
-            import subprocess
+    # if nsp.wheel(kw, setup):
+    #     return
+    with TmpFiles(pkg_data, keep=True):
+        for x in ['-c', 'egg_info', '--egg-base', 'pip-egg-info']:
+            if x not in sys.argv:
+                break
+        else:
+            # we're doing a tox setup install any starred package by searching up the
+            # source tree until you match your/package/name for your.package.name
+            for p in nsp.install_pre:
+                import subprocess
 
-            # search other source
-            setup_path = os.path.join(*p.split('.') + ['setup.py'])
-            try_dir = os.path.dirname(sys.executable)
-            while len(try_dir) > 1:
-                full_path_setup_py = os.path.join(try_dir, setup_path)
-                if os.path.exists(full_path_setup_py):
-                    pip = sys.executable.replace('python', 'pip')
-                    cmd = [pip, 'install', os.path.dirname(full_path_setup_py)]
-                    # with open('/var/tmp/notice', 'a') as fp:
-                    #     print('installing', cmd, file=fp)
-                    subprocess.check_output(cmd)
-                    break
-                try_dir = os.path.dirname(try_dir)
-    setup(**kw)
+                # search other source
+                setup_path = os.path.join(*p.split('.') + ['setup.py'])
+                try_dir = os.path.dirname(sys.executable)
+                while len(try_dir) > 1:
+                    full_path_setup_py = os.path.join(try_dir, setup_path)
+                    if os.path.exists(full_path_setup_py):
+                        pip = sys.executable.replace('python', 'pip')
+                        cmd = [pip, 'install', os.path.dirname(full_path_setup_py)]
+                        # with open('/var/tmp/notice', 'a') as fp:
+                        #     print('installing', cmd, file=fp)
+                        subprocess.check_output(cmd)
+                        break
+                    try_dir = os.path.dirname(try_dir)
+        setup(**kw)
 
 
 main()
