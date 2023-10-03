@@ -1,4 +1,4 @@
-FROM quay.io/pypa/manylinux1_x86_64:latest
+FROM quay.io/pypa/manylinux_2_28_x86_64:latest
 
 MAINTAINER Anthon van der Neut <a.van.der.neut@ruamel.eu>
 
@@ -22,4 +22,4 @@ RUN echo '  auditwheel repair "$whl" -w /src/dist/'       >> /usr/bin/makewheel
 RUN echo 'done'                                           >> /usr/bin/makewheel
 RUN chmod 755 /usr/bin/makewheel
 
-CMD /usr/bin/makewheel 27 35 36 37 38 39
+CMD /usr/bin/makewheel 37 38 39 310 311 312
