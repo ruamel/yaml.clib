@@ -5,12 +5,12 @@ environment:
       APPVEYOR_JOB_NAME: "python3-x64-vs2019"
       CIBW_BUILD: "cp313-win* cp312-win* cp311-win* cp310-win* cp39-win*"
 
-stack: python 3.12
+stack: python 3.11
 
 init:
-- cmd: set PATH=C:\Python312;C:\Python312\Scripts;%PATH%
+- cmd: set PATH=C:\Python311;C:\Python311\Scripts;%PATH%
 
-install: python -m pip install -U pip cibuildwheel>=2.21.3
+install: python -m pip install -U pip cibuildwheel==2.21.3
 
 build_script:
   - python -m cibuildwheel --output-dir whl
