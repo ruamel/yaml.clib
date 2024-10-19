@@ -312,6 +312,7 @@ class NameSpacePackager(object):
         self._pkg_data = pkg_data
         self.full_package_name = self.pn(self._pkg_data['full_package_name'])
         self._split = None
+        self._extra_packages = []
         self.depth = self.full_package_name.count('.')
         self.nested = self._pkg_data.get('nested', False)
         # if self.nested:
@@ -352,8 +353,8 @@ class NameSpacePackager(object):
     def split(self):
         """split the full package name in list of compontents traditionally
         done by setuptools.find_packages. This routine skips any directories
-        with __init__.py, for which the name starts with "_" or ".", or contain a
-        setup.py/tox.ini (indicating a subpackage)
+        with __init__.py, for which the name starts with "_" or ".", or the
+        __init__.py contains package data (indicating a subpackage)
         """
         skip = []
         if self._split is None:
@@ -372,7 +373,9 @@ class NameSpacePackager(object):
                     if pd.get('nested', False):
                         skip.append(d)
                         continue
-                    self._split.append(self.full_package_name + '.' + d)
+                    ep = self.full_package_name + '.' + d
+                    self._split.append(ep)
+                    self._extra_packages.append(ep)
             if sys.version_info < (3,):
                 self._split = [
                     (y.encode('utf-8') if isinstance(y, unicode) else y) for y in self._split
@@ -517,14 +520,22 @@ class NameSpacePackager(object):
         }
 
     @property
-    def url(self):
-        url = self._pkg_data.get('url')
-        if url:
-            return url
+    def project_urls(self):
+        ret_val = {}
         sp = self.full_package_name
         for ch in '_.':
             sp = sp.replace(ch, '-')
-        return 'https://sourceforge.net/p/{0}/code/ci/default/tree'.format(sp)
+        base_url = self._pkg_data.get('url', 'https://sourceforge.net/p/{0}'.format(sp))
+        if base_url[-1] != '/':
+            base_url += '/'
+        ret_val['Home'] = base_url
+        if 'sourceforge.net' in base_url:
+            ret_val['Source'] = base_url + 'code/ci/default/tree/'
+            ret_val['Tracker'] = base_url + 'tickets/'
+        rtfd = self._pkg_data.get('read_the_docs')
+        if rtfd:
+            ret_val['Documentation'] = 'https://{0}.readthedocs.io/'.format(rtfd)
+        return ret_val
 
     @property
     def author(self):
@@ -705,7 +716,16 @@ class NameSpacePackager(object):
         # fixed this in package_data, the keys there must be non-unicode for py27
         # if sys.version_info < (3, 0):
         #     s = [x.encode('utf-8') for x in self.split]
-        return s + self._pkg_data.get('extra_packages', [])
+        # return s + self._pkg_data.get('extra_packages', [])
+        return s + self.extra_packages
+
+    @property
+    def extra_packages(self):
+        try:
+            return self._pkg_data['extra_packages']
+        except KeyError:
+            _ = self.split
+            return self._extra_packages
 
     @property
     def python_requires(self):
@@ -853,7 +873,7 @@ def main():
         version=version_str,
         packages=nsp.packages,
         python_requires=nsp.python_requires,
-        url=nsp.url,
+        project_urls=nsp.project_urls,
         author=nsp.author,
         author_email=nsp.author_email,
         cmdclass=cmdclass,
@@ -879,12 +899,17 @@ def main():
     #     return
     if dump_kw in sys.argv:
         sys.argv.remove(dump_kw)
-    try:
-        with open('README.rst') as fp:
-            kw['long_description'] = fp.read()
-            kw['long_description_content_type'] = 'text/x-rst'
-    except Exception:
-        pass
+    if not os.environ.get('RUAMEL_NO_LONG_DESCRIPTION', False):
+        for readme_file_name, readme_markup_type in [
+            ('README.md', 'text/markdown; charset=UTF-8; variant=CommonMark'),
+            ('README.rst', 'text/x-rst'),
+        ]:
+            try:
+                kw['long_description'] = open(readme_file_name).read()
+                kw['long_description_content_type'] = readme_markup_type
+                break
+            except FileNotFoundError:
+                pass
 
     # if nsp.wheel(kw, setup):
     #     return
