@@ -1,1 +1,1 @@
-include README.rst LICENSE setup.py *.c *.h *.pxd *.pyx
+include README.md LICENSE setup.py *.c *.h *.pxd *.pyx
