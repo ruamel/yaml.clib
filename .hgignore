@@ -10,3 +10,4 @@ syntax: glob
 TODO
 tmp
 build.zig
+Makefile

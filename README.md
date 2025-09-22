@@ -6,7 +6,7 @@
 <table class="docutils">
   <tr>
     <td>version</td>
-    <td>0.2.13</td>
+    <td>0.2.14</td>
   </tr>
   <tr>
     <td>updated</td>

@@ -7,9 +7,9 @@ if False:  # MYPY
 
 _package_data = dict(
     full_package_name='ruamel.yaml.clib',
-    version_info=(0, 2, 13),
-    __version__='0.2.13',
-    version_timestamp='2025-09-22 09:18:07',
+    version_info=(0, 2, 14),
+    __version__='0.2.14',
+    version_timestamp='2025-09-22 18:47:49',
     author='Anthon van der Neut',
     author_email='a.van.der.neut@ruamel.eu',
     description='C version of reader, parser and emitter for ruamel.yaml derived from libyaml',
@@ -31,6 +31,10 @@ _package_data = dict(
                 'scanner.c',
                 'parser.c',
                 'emitter.c',
+                # '_ruamel_yaml.h',
+                # 'config.h',
+                # 'yaml_private.h',
+                # 'yaml.h',
             ],
             lib=[],
             test="""
