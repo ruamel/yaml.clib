@@ -9,9 +9,9 @@ pdf: false
 --- !table
 version:  !Env version
 updated: !Env date 
-documentation:   <https://yaml.dev/doc/ruamel.yaml.clib>
-repository:   <https://sourceforge.net/projects/ruamel-yaml-clib/>
-pypi:   <https://pypi.org/project/ruamel.yaml.clib/>
+documentation:   https://yaml.dev/doc/ruamel.yaml.clib
+repository:   https://sourceforge.net/projects/ruamel-yaml-clib/
+pypi:   https://pypi.org/project/ruamel.yaml.clib/
 --- |
 
 This package was split of from ruamel.yaml, so that ruamel.yaml can be
