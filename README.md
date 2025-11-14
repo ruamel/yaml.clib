@@ -6,11 +6,11 @@
 <table class="docutils">
   <tr>
     <td>version</td>
-    <td>0.2.14</td>
+    <td>version</td>
   </tr>
   <tr>
     <td>updated</td>
-    <td>2025-09-22</td>
+    <td>date</td>
   </tr>
   <tr>
     <td>documentation</td>
