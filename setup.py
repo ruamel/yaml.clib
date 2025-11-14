@@ -752,14 +752,18 @@ class NameSpacePackager(object):
         if os.path.exists(file_name):  # add it if not in there?
             return False
         with open(file_name, 'w') as fp:
+            fp.write('[options]\n')
+            fp.write('python_requires = {}\n'.format(self.pkg_data.get(
+                 'python_requires', '>=3.9')))
             if self._pkg_data.get('universal'):
-                fp.write('[bdist_wheel]\nuniversal = 1\n')
+                fp.write('\n[bdist_wheel]\nuniversal = 1\n')
         try:
             setup(**kw)
         except Exception:
             raise
         finally:
-            os.remove(file_name)
+            pass
+            # os.remove(file_name)
         return True
 
 
