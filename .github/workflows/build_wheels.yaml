@@ -1,6 +1,11 @@
 name: Build
 
 on: [push]
+# for tags push only
+# on:
+#   push:
+#     tags:
+#       - '*'
 
 jobs:
   build_wheels:

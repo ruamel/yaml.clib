@@ -6,3 +6,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 skip = "cp3??t-*"
+
+[tool.cibuildwheel.linux]
+archs = "x86_64 i686"
